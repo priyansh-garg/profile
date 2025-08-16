@@ -1,13 +1,17 @@
 import { Button } from "@/components/ui/button";
 import { Github, Linkedin, Mail, Download } from "lucide-react";
+import { Background3D } from "@/components/3d/Background3D";
 import heroBg from "@/assets/hero-bg.jpg";
 
 export const HeroSection = () => {
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
-      {/* Background */}
+      {/* 3D Background */}
+      <Background3D />
+      
+      {/* Static Background as fallback */}
       <div 
-        className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+        className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-30"
         style={{ backgroundImage: `url(${heroBg})` }}
       >
         <div className="absolute inset-0 gradient-hero" />
