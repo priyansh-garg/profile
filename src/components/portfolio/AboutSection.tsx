@@ -4,7 +4,7 @@ import { MapPin, GraduationCap, Award } from "lucide-react";
 
 export const AboutSection = () => {
   const stats = [
-    { label: "Years Experience", value: "2+" },
+    { label: "Years Experience", value: "3+" },
     { label: "Projects Completed", value: "10+" },
     { label: "Technologies", value: "15+" },
     { label: "Revenue Impact", value: "₹100Cr+" },
