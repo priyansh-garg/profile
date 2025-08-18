@@ -40,22 +40,27 @@ const InteractiveParticles = () => {
         const dy = positions[i3 + 1] - mouseY;
         const distance = Math.sqrt(dx * dx + dy * dy);
         
-        // Mouse attraction/repulsion
-        if (distance < 3) {
-          const force = (3 - distance) * 0.001;
+        // Enhanced mouse attraction/repulsion with stronger effect
+        if (distance < 4) {
+          const force = (4 - distance) * 0.003;
           velocities[i3] += dx * force;
           velocities[i3 + 1] += dy * force;
+          
+          // Add spiral motion around mouse
+          const angle = Math.atan2(dy, dx);
+          velocities[i3] += Math.cos(angle + Math.PI/2) * force * 0.5;
+          velocities[i3 + 1] += Math.sin(angle + Math.PI/2) * force * 0.5;
         }
         
-        // Apply velocities
+        // Apply velocities with enhanced movement
         positions[i3] += velocities[i3];
         positions[i3 + 1] += velocities[i3 + 1];
-        positions[i3 + 2] += velocities[i3 + 2];
+        positions[i3 + 2] += velocities[i3 + 2] + Math.sin(state.clock.elapsedTime + i * 0.01) * 0.001;
         
-        // Damping
-        velocities[i3] *= 0.99;
-        velocities[i3 + 1] *= 0.99;
-        velocities[i3 + 2] *= 0.99;
+        // Enhanced damping for smoother movement
+        velocities[i3] *= 0.98;
+        velocities[i3 + 1] *= 0.98;
+        velocities[i3 + 2] *= 0.98;
         
         // Boundary wrapping
         if (positions[i3] > 10) positions[i3] = -10;
@@ -146,23 +151,27 @@ const MorphingSphere = () => {
       for (let i = 0; i < positionAttribute.count; i++) {
         vertex.fromBufferAttribute(positionAttribute, i);
         
-        const mouseInfluence = Math.exp(-(mouse.x ** 2 + mouse.y ** 2) * 2);
+        const mouseInfluence = Math.exp(-(mouse.x ** 2 + mouse.y ** 2) * 1.5);
         const time = state.clock.elapsedTime;
         
         vertex.normalize();
-        const distortion = Math.sin(vertex.x * 4 + time) * Math.cos(vertex.y * 4 + time) * 0.1;
-        const mouseDistortion = mouseInfluence * 0.3;
+        const distortion = Math.sin(vertex.x * 6 + time * 2) * Math.cos(vertex.y * 6 + time * 2) * 0.15;
+        const mouseDistortion = mouseInfluence * 0.5;
         
-        vertex.multiplyScalar(1 + distortion + mouseDistortion);
+        // Add pulsing effect
+        const pulse = Math.sin(time * 3) * 0.05;
+        
+        vertex.multiplyScalar(1 + distortion + mouseDistortion + pulse);
         positionAttribute.setXYZ(i, vertex.x, vertex.y, vertex.z);
       }
       
       positionAttribute.needsUpdate = true;
       geometry.computeVertexNormals();
       
-      // Rotate based on mouse position
-      meshRef.current.rotation.y += mouse.x * 0.01;
-      meshRef.current.rotation.x += mouse.y * 0.01;
+      // Enhanced rotation based on mouse position
+      meshRef.current.rotation.y += mouse.x * 0.02 + 0.005;
+      meshRef.current.rotation.x += mouse.y * 0.02 + 0.003;
+      meshRef.current.rotation.z += mouse.x * mouse.y * 0.01;
     }
   });
 

@@ -23,66 +23,66 @@ export const HeroSection = () => {
       <div className="absolute top-1/3 right-10 w-12 h-12 border border-primary/30 rounded-lg animate-float" style={{ animationDelay: "4s" }} />
       
       {/* Content */}
-      <div className="relative z-10 max-w-6xl mx-auto px-6">
-        <div className="grid lg:grid-cols-2 gap-12 items-center">
+      <div className="relative z-10 max-w-6xl mx-auto px-4 sm:px-6">
+        <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-center">
           {/* Text Content */}
-          <div className="text-center lg:text-left animate-fade-in">
-            <p className="text-primary font-medium mb-4 tracking-wider uppercase text-sm">
+          <div className="text-center lg:text-left animate-fade-in order-2 lg:order-1">
+            <p className="text-primary font-medium mb-3 sm:mb-4 tracking-wider uppercase text-xs sm:text-sm">
               Software Engineer
             </p>
-            <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold mb-6">
+            <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold mb-4 sm:mb-6">
               <span className="text-gradient">Priyansh</span>
               <br />
               <span className="text-foreground">Garg</span>
             </h1>
-            <p className="text-xl md:text-2xl text-muted-foreground mb-8 leading-relaxed">
+            <p className="text-lg sm:text-xl md:text-2xl text-muted-foreground mb-6 sm:mb-8 leading-relaxed px-2 sm:px-0">
               Full-Stack Developer with expertise in Java, React Native, and cloud technologies. 
               Building scalable solutions at Kotak Mahindra Bank.
             </p>
             
-            <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start items-center mb-12">
-              <Button variant="hero" size="lg" className="group">
-                <Mail className="mr-2 h-5 w-5 group-hover:scale-110 transition-transform" />
+            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center lg:justify-start items-center mb-8 sm:mb-12 px-4 sm:px-0">
+              <Button variant="hero" size="lg" className="group w-full sm:w-auto">
+                <Mail className="mr-2 h-4 w-4 sm:h-5 sm:w-5 group-hover:scale-110 transition-transform" />
                 Get In Touch
               </Button>
-              <Button variant="outline" size="lg" className="group">
-                <Download className="mr-2 h-5 w-5 group-hover:scale-110 transition-transform" />
+              <Button variant="outline" size="lg" className="group w-full sm:w-auto">
+                <Download className="mr-2 h-4 w-4 sm:h-5 sm:w-5 group-hover:scale-110 transition-transform" />
                 Download Resume
               </Button>
             </div>
             
-            <div className="flex gap-6 justify-center lg:justify-start">
+            <div className="flex gap-4 sm:gap-6 justify-center lg:justify-start">
               <a 
                 href="https://www.linkedin.com/in/garg-priyansh/" 
                 target="_blank" 
                 rel="noopener noreferrer"
-                className="p-3 rounded-full bg-white/5 backdrop-blur-sm border border-white/10 hover:bg-primary/20 hover:border-primary/30 transition-smooth group"
+                className="p-2 sm:p-3 rounded-full bg-white/5 backdrop-blur-sm border border-white/10 hover:bg-primary/20 hover:border-primary/30 transition-smooth group"
               >
-                <Linkedin className="h-6 w-6 group-hover:scale-110 transition-transform" />
+                <Linkedin className="h-5 w-5 sm:h-6 sm:w-6 group-hover:scale-110 transition-transform" />
               </a>
               <a 
                 href="mailto:priyanshgarg.iitr@gmail.com"
-                className="p-3 rounded-full bg-white/5 backdrop-blur-sm border border-white/10 hover:bg-primary/20 hover:border-primary/30 transition-smooth group"
+                className="p-2 sm:p-3 rounded-full bg-white/5 backdrop-blur-sm border border-white/10 hover:bg-primary/20 hover:border-primary/30 transition-smooth group"
               >
-                <Mail className="h-6 w-6 group-hover:scale-110 transition-transform" />
+                <Mail className="h-5 w-5 sm:h-6 sm:w-6 group-hover:scale-110 transition-transform" />
               </a>
               <a 
                 href="#" 
-                className="p-3 rounded-full bg-white/5 backdrop-blur-sm border border-white/10 hover:bg-primary/20 hover:border-primary/30 transition-smooth group"
+                className="p-2 sm:p-3 rounded-full bg-white/5 backdrop-blur-sm border border-white/10 hover:bg-primary/20 hover:border-primary/30 transition-smooth group"
               >
-                <Github className="h-6 w-6 group-hover:scale-110 transition-transform" />
+                <Github className="h-5 w-5 sm:h-6 sm:w-6 group-hover:scale-110 transition-transform" />
               </a>
             </div>
           </div>
 
           {/* Profile Image */}
-          <div className="flex justify-center lg:justify-end animate-fade-in" style={{ animationDelay: "0.3s" }}>
+          <div className="flex justify-center lg:justify-end animate-fade-in order-1 lg:order-2" style={{ animationDelay: "0.3s" }}>
             <div className="relative">
               {/* Glow effect */}
               <div className="absolute inset-0 bg-primary/20 rounded-full blur-3xl scale-110 animate-pulse" />
               
               {/* Profile image container */}
-              <div className="relative w-80 h-80 lg:w-96 lg:h-96 rounded-full overflow-hidden border-4 border-primary/30 shadow-glow group hover:scale-105 transition-bouncy">
+              <div className="relative w-64 h-64 sm:w-80 sm:h-80 lg:w-96 lg:h-96 rounded-full overflow-hidden border-4 border-primary/30 shadow-glow group hover:scale-105 transition-bouncy">
                 <img 
                   src="/lovable-uploads/4a0daf9f-1de7-45de-a060-ef384312dc49.png"
                   alt="Priyansh Garg - Software Engineer"
@@ -93,14 +93,14 @@ export const HeroSection = () => {
                 <div className="absolute inset-0 bg-gradient-to-t from-primary/20 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-smooth" />
               </div>
               
-              {/* Floating tech icons */}
-              <div className="absolute -top-4 -right-4 w-12 h-12 bg-primary/20 backdrop-blur-sm rounded-full border border-primary/30 flex items-center justify-center animate-float">
-                <span className="text-primary font-bold text-sm">JS</span>
+              {/* Floating tech icons - adjusted for mobile */}
+              <div className="absolute -top-2 -right-2 sm:-top-4 sm:-right-4 w-10 h-10 sm:w-12 sm:h-12 bg-primary/20 backdrop-blur-sm rounded-full border border-primary/30 flex items-center justify-center animate-float">
+                <span className="text-primary font-bold text-xs sm:text-sm">JS</span>
               </div>
-              <div className="absolute -bottom-4 -left-4 w-12 h-12 bg-primary/20 backdrop-blur-sm rounded-full border border-primary/30 flex items-center justify-center animate-float" style={{ animationDelay: "2s" }}>
-                <span className="text-primary font-bold text-sm">⚛️</span>
+              <div className="absolute -bottom-2 -left-2 sm:-bottom-4 sm:-left-4 w-10 h-10 sm:w-12 sm:h-12 bg-primary/20 backdrop-blur-sm rounded-full border border-primary/30 flex items-center justify-center animate-float" style={{ animationDelay: "2s" }}>
+                <span className="text-primary font-bold text-xs sm:text-sm">⚛️</span>
               </div>
-              <div className="absolute top-1/2 -right-8 w-10 h-10 bg-primary/20 backdrop-blur-sm rounded-full border border-primary/30 flex items-center justify-center animate-float" style={{ animationDelay: "4s" }}>
+              <div className="absolute top-1/2 -right-4 sm:-right-8 w-8 h-8 sm:w-10 sm:h-10 bg-primary/20 backdrop-blur-sm rounded-full border border-primary/30 flex items-center justify-center animate-float" style={{ animationDelay: "4s" }}>
                 <span className="text-primary font-bold text-xs">☁️</span>
               </div>
             </div>
