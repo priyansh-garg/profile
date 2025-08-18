@@ -1,37 +1,49 @@
-import { useRef } from 'react';
-import { useFrame } from '@react-three/fiber';
-import { Float, Sphere, Box, Torus } from '@react-three/drei';
+import { useRef, useState } from 'react';
+import { useFrame, useThree } from '@react-three/fiber';
+import { Float, Sphere, Box, Torus, OrbitControls } from '@react-three/drei';
 import * as THREE from 'three';
 
-// Floating geometric shapes
+// Interactive floating geometric shapes
 const FloatingShape = ({ position, shape = "sphere", color = "#3b82f6" }: { 
   position: [number, number, number], 
   shape?: "sphere" | "box" | "torus",
   color?: string 
 }) => {
   const meshRef = useRef<THREE.Mesh>(null);
+  const [hovered, setHovered] = useState(false);
+  const [clicked, setClicked] = useState(false);
 
   useFrame((state) => {
     if (meshRef.current) {
-      meshRef.current.rotation.x += 0.01;
-      meshRef.current.rotation.y += 0.01;
+      const rotationSpeed = hovered ? 0.02 : 0.01;
+      const scale = clicked ? 1.2 : hovered ? 1.1 : 1;
+      
+      meshRef.current.rotation.x += rotationSpeed;
+      meshRef.current.rotation.y += rotationSpeed;
       meshRef.current.position.y += Math.sin(state.clock.elapsedTime + position[0]) * 0.002;
+      meshRef.current.scale.setScalar(THREE.MathUtils.lerp(meshRef.current.scale.x, scale, 0.1));
     }
   });
 
   const material = (
     <meshStandardMaterial 
-      color={color} 
+      color={hovered ? "#60a5fa" : color} 
       transparent 
-      opacity={0.6}
-      emissive={color}
-      emissiveIntensity={0.2}
+      opacity={hovered ? 0.8 : 0.6}
+      emissive={hovered ? "#3b82f6" : color}
+      emissiveIntensity={hovered ? 0.4 : 0.2}
     />
   );
 
   return (
     <Float speed={2} rotationIntensity={1} floatIntensity={2}>
-      <mesh ref={meshRef} position={position}>
+      <mesh 
+        ref={meshRef} 
+        position={position}
+        onPointerOver={() => setHovered(true)}
+        onPointerOut={() => setHovered(false)}
+        onClick={() => setClicked(!clicked)}
+      >
         {shape === "sphere" && <Sphere args={[0.5, 32, 32]}>{material}</Sphere>}
         {shape === "box" && <Box args={[0.8, 0.8, 0.8]}>{material}</Box>}
         {shape === "torus" && <Torus args={[0.6, 0.2, 16, 32]}>{material}</Torus>}
@@ -40,9 +52,10 @@ const FloatingShape = ({ position, shape = "sphere", color = "#3b82f6" }: {
   );
 };
 
-// Animated particles
+// Interactive animated particles
 const Particles = () => {
   const meshRef = useRef<THREE.Points>(null);
+  const { mouse } = useThree();
   
   // Create particle positions
   const particleCount = 100;
@@ -56,8 +69,8 @@ const Particles = () => {
 
   useFrame((state) => {
     if (meshRef.current) {
-      meshRef.current.rotation.y += 0.002;
-      meshRef.current.rotation.x += 0.001;
+      meshRef.current.rotation.y += 0.002 + mouse.x * 0.001;
+      meshRef.current.rotation.x += 0.001 + mouse.y * 0.001;
     }
   });
 
@@ -82,9 +95,10 @@ const Particles = () => {
   );
 };
 
-// Wave grid
+// Interactive wave grid
 const WaveGrid = () => {
   const meshRef = useRef<THREE.Mesh>(null);
+  const { mouse } = useThree();
 
   useFrame((state) => {
     if (meshRef.current) {
@@ -94,8 +108,10 @@ const WaveGrid = () => {
       for (let i = 0; i < positionAttribute.count; i++) {
         const x = positionAttribute.getX(i);
         const y = positionAttribute.getY(i);
+        const mouseInfluence = Math.exp(-((x - mouse.x * 5) ** 2 + (y - mouse.y * 5) ** 2) / 10);
         const wave = Math.sin(x * 0.5 + state.clock.elapsedTime) * 
-                    Math.cos(y * 0.5 + state.clock.elapsedTime) * 0.3;
+                    Math.cos(y * 0.5 + state.clock.elapsedTime) * 0.3 +
+                    mouseInfluence * 0.5;
         positionAttribute.setZ(i, wave);
       }
       
@@ -122,6 +138,18 @@ const WaveGrid = () => {
 export const Scene3D = () => {
   return (
     <>
+      {/* Interactive camera controls */}
+      <OrbitControls 
+        enablePan={false}
+        enableZoom={true}
+        enableRotate={true}
+        maxDistance={10}
+        minDistance={3}
+        maxPolarAngle={Math.PI / 2}
+        autoRotate={true}
+        autoRotateSpeed={0.5}
+      />
+      
       {/* Lighting */}
       <ambientLight intensity={0.5} />
       <pointLight position={[10, 10, 10]} intensity={1} color="#3b82f6" />

@@ -13,8 +13,7 @@ export const Background3D = () => {
           far: 1000 
         }}
         style={{ 
-          background: 'transparent',
-          pointerEvents: 'none' // Allow clicks to pass through
+          background: 'transparent'
         }}
         gl={{ 
           alpha: true, 
