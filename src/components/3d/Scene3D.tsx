@@ -69,8 +69,11 @@ const Particles = () => {
 
   useFrame((state) => {
     if (meshRef.current) {
-      meshRef.current.rotation.y += 0.002 + mouse.x * 0.001;
-      meshRef.current.rotation.x += 0.001 + mouse.y * 0.001;
+      const mouseDistance = Math.sqrt(mouse.x ** 2 + mouse.y ** 2);
+      const intensity = Math.max(0.002, 0.002 + mouseDistance * 0.01);
+      
+      meshRef.current.rotation.y += intensity + mouse.x * 0.001;
+      meshRef.current.rotation.x += intensity / 2 + mouse.y * 0.001;
     }
   });
 
@@ -95,6 +98,30 @@ const Particles = () => {
   );
 };
 
+// Interactive mouse-following light
+const MouseLight = () => {
+  const lightRef = useRef<THREE.PointLight>(null);
+  const { mouse, viewport } = useThree();
+
+  useFrame(() => {
+    if (lightRef.current) {
+      lightRef.current.position.x = (mouse.x * viewport.width) / 2;
+      lightRef.current.position.y = (mouse.y * viewport.height) / 2;
+      lightRef.current.position.z = 2;
+    }
+  });
+
+  return (
+    <pointLight
+      ref={lightRef}
+      intensity={2}
+      color="#60a5fa"
+      distance={10}
+      decay={2}
+    />
+  );
+};
+
 // Interactive wave grid
 const WaveGrid = () => {
   const meshRef = useRef<THREE.Mesh>(null);
@@ -108,10 +135,10 @@ const WaveGrid = () => {
       for (let i = 0; i < positionAttribute.count; i++) {
         const x = positionAttribute.getX(i);
         const y = positionAttribute.getY(i);
-        const mouseInfluence = Math.exp(-((x - mouse.x * 5) ** 2 + (y - mouse.y * 5) ** 2) / 10);
+        const mouseInfluence = Math.exp(-((x - mouse.x * 8) ** 2 + (y - mouse.y * 8) ** 2) / 15);
         const wave = Math.sin(x * 0.5 + state.clock.elapsedTime) * 
                     Math.cos(y * 0.5 + state.clock.elapsedTime) * 0.3 +
-                    mouseInfluence * 0.5;
+                    mouseInfluence * 1.2;
         positionAttribute.setZ(i, wave);
       }
       
@@ -122,7 +149,7 @@ const WaveGrid = () => {
 
   return (
     <mesh ref={meshRef} position={[0, 0, -5]} rotation={[-Math.PI / 4, 0, 0]}>
-      <planeGeometry args={[20, 20, 32, 32]} />
+      <planeGeometry args={[20, 20, 64, 64]} />
       <meshStandardMaterial
         color="#1e40af"
         transparent
@@ -150,10 +177,12 @@ export const Scene3D = () => {
         autoRotateSpeed={0.5}
       />
       
-      {/* Lighting */}
-      <ambientLight intensity={0.5} />
-      <pointLight position={[10, 10, 10]} intensity={1} color="#3b82f6" />
-      <pointLight position={[-10, -10, -10]} intensity={0.5} color="#8b5cf6" />
+      {/* Dynamic lighting that follows mouse */}
+      <MouseLight />
+      <ambientLight intensity={0.3} />
+      <pointLight position={[10, 10, 10]} intensity={0.8} color="#3b82f6" />
+      <pointLight position={[-10, -10, -10]} intensity={0.3} color="#8b5cf6" />
+      <directionalLight position={[5, 5, 5]} intensity={0.5} color="#ffffff" />
       
       {/* Floating shapes */}
       <FloatingShape position={[-3, 2, 0]} shape="sphere" color="#3b82f6" />
