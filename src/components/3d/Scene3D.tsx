@@ -1,201 +1,232 @@
-import { useRef, useState } from 'react';
+import { useRef, useMemo, useEffect } from 'react';
 import { useFrame, useThree } from '@react-three/fiber';
-import { Float, Sphere, Box, Torus, OrbitControls } from '@react-three/drei';
+import { Points, PointMaterial } from '@react-three/drei';
 import * as THREE from 'three';
 
-// Interactive floating geometric shapes
-const FloatingShape = ({ position, shape = "sphere", color = "#3b82f6" }: { 
-  position: [number, number, number], 
-  shape?: "sphere" | "box" | "torus",
-  color?: string 
-}) => {
-  const meshRef = useRef<THREE.Mesh>(null);
-  const [hovered, setHovered] = useState(false);
-  const [clicked, setClicked] = useState(false);
-
-  useFrame((state) => {
-    if (meshRef.current) {
-      const rotationSpeed = hovered ? 0.02 : 0.01;
-      const scale = clicked ? 1.2 : hovered ? 1.1 : 1;
+// Interactive particle field that responds to mouse
+const InteractiveParticles = () => {
+  const ref = useRef<THREE.Points>(null);
+  const { mouse, viewport } = useThree();
+  
+  const particleCount = 2000;
+  const [positions, velocities] = useMemo(() => {
+    const positions = new Float32Array(particleCount * 3);
+    const velocities = new Float32Array(particleCount * 3);
+    
+    for (let i = 0; i < particleCount; i++) {
+      positions[i * 3] = (Math.random() - 0.5) * 20;
+      positions[i * 3 + 1] = (Math.random() - 0.5) * 20;
+      positions[i * 3 + 2] = (Math.random() - 0.5) * 10;
       
-      meshRef.current.rotation.x += rotationSpeed;
-      meshRef.current.rotation.y += rotationSpeed;
-      meshRef.current.position.y += Math.sin(state.clock.elapsedTime + position[0]) * 0.002;
-      meshRef.current.scale.setScalar(THREE.MathUtils.lerp(meshRef.current.scale.x, scale, 0.1));
+      velocities[i * 3] = (Math.random() - 0.5) * 0.02;
+      velocities[i * 3 + 1] = (Math.random() - 0.5) * 0.02;
+      velocities[i * 3 + 2] = (Math.random() - 0.5) * 0.02;
     }
-  });
-
-  const material = (
-    <meshStandardMaterial 
-      color={hovered ? "#60a5fa" : color} 
-      transparent 
-      opacity={hovered ? 0.8 : 0.6}
-      emissive={hovered ? "#3b82f6" : color}
-      emissiveIntensity={hovered ? 0.4 : 0.2}
-    />
-  );
-
-  return (
-    <Float speed={2} rotationIntensity={1} floatIntensity={2}>
-      <mesh 
-        ref={meshRef} 
-        position={position}
-        onPointerOver={() => setHovered(true)}
-        onPointerOut={() => setHovered(false)}
-        onClick={() => setClicked(!clicked)}
-      >
-        {shape === "sphere" && <Sphere args={[0.5, 32, 32]}>{material}</Sphere>}
-        {shape === "box" && <Box args={[0.8, 0.8, 0.8]}>{material}</Box>}
-        {shape === "torus" && <Torus args={[0.6, 0.2, 16, 32]}>{material}</Torus>}
-      </mesh>
-    </Float>
-  );
-};
-
-// Interactive animated particles
-const Particles = () => {
-  const meshRef = useRef<THREE.Points>(null);
-  const { mouse } = useThree();
-  
-  // Create particle positions
-  const particleCount = 100;
-  const positions = new Float32Array(particleCount * 3);
-  
-  for (let i = 0; i < particleCount; i++) {
-    positions[i * 3] = (Math.random() - 0.5) * 20;
-    positions[i * 3 + 1] = (Math.random() - 0.5) * 20;
-    positions[i * 3 + 2] = (Math.random() - 0.5) * 20;
-  }
+    
+    return [positions, velocities];
+  }, []);
 
   useFrame((state) => {
-    if (meshRef.current) {
-      const mouseDistance = Math.sqrt(mouse.x ** 2 + mouse.y ** 2);
-      const intensity = Math.max(0.002, 0.002 + mouseDistance * 0.01);
+    if (ref.current) {
+      const positions = ref.current.geometry.attributes.position.array as Float32Array;
+      const mouseX = (mouse.x * viewport.width) / 2;
+      const mouseY = (mouse.y * viewport.height) / 2;
       
-      meshRef.current.rotation.y += intensity + mouse.x * 0.001;
-      meshRef.current.rotation.x += intensity / 2 + mouse.y * 0.001;
+      for (let i = 0; i < particleCount; i++) {
+        const i3 = i * 3;
+        
+        // Calculate distance to mouse
+        const dx = positions[i3] - mouseX;
+        const dy = positions[i3 + 1] - mouseY;
+        const distance = Math.sqrt(dx * dx + dy * dy);
+        
+        // Mouse attraction/repulsion
+        if (distance < 3) {
+          const force = (3 - distance) * 0.001;
+          velocities[i3] += dx * force;
+          velocities[i3 + 1] += dy * force;
+        }
+        
+        // Apply velocities
+        positions[i3] += velocities[i3];
+        positions[i3 + 1] += velocities[i3 + 1];
+        positions[i3 + 2] += velocities[i3 + 2];
+        
+        // Damping
+        velocities[i3] *= 0.99;
+        velocities[i3 + 1] *= 0.99;
+        velocities[i3 + 2] *= 0.99;
+        
+        // Boundary wrapping
+        if (positions[i3] > 10) positions[i3] = -10;
+        if (positions[i3] < -10) positions[i3] = 10;
+        if (positions[i3 + 1] > 10) positions[i3 + 1] = -10;
+        if (positions[i3 + 1] < -10) positions[i3 + 1] = 10;
+        if (positions[i3 + 2] > 5) positions[i3 + 2] = -5;
+        if (positions[i3 + 2] < -5) positions[i3 + 2] = 5;
+      }
+      
+      ref.current.geometry.attributes.position.needsUpdate = true;
     }
   });
 
   return (
-    <points ref={meshRef}>
-      <bufferGeometry>
-        <bufferAttribute
-          attach="attributes-position"
-          count={particleCount}
-          array={positions}
-          itemSize={3}
-        />
-      </bufferGeometry>
-      <pointsMaterial
-        color="#3b82f6"
-        size={0.05}
+    <Points ref={ref} positions={positions} stride={3} frustumCulled={false}>
+      <PointMaterial
         transparent
-        opacity={0.6}
-        sizeAttenuation
+        color="#60a5fa"
+        size={0.015}
+        sizeAttenuation={true}
+        depthWrite={false}
+        opacity={0.8}
       />
-    </points>
+    </Points>
   );
 };
 
-// Interactive mouse-following light
-const MouseLight = () => {
+// Connection lines between nearby particles
+const ParticleConnections = () => {
+  const ref = useRef<THREE.LineSegments>(null);
+  const { mouse, viewport } = useThree();
+  const particlesRef = useRef<THREE.Points>(null);
+
+  useFrame(() => {
+    if (ref.current && particlesRef.current) {
+      const positions = particlesRef.current.geometry.attributes.position.array as Float32Array;
+      const linePositions: number[] = [];
+      const maxDistance = 1.5;
+      const mouseX = (mouse.x * viewport.width) / 2;
+      const mouseY = (mouse.y * viewport.height) / 2;
+
+      for (let i = 0; i < positions.length; i += 3) {
+        for (let j = i + 3; j < positions.length; j += 3) {
+          const dx = positions[i] - positions[j];
+          const dy = positions[i + 1] - positions[j + 1];
+          const dz = positions[i + 2] - positions[j + 2];
+          const distance = Math.sqrt(dx * dx + dy * dy + dz * dz);
+
+          if (distance < maxDistance) {
+            // Check if either particle is near mouse
+            const dist1 = Math.sqrt((positions[i] - mouseX) ** 2 + (positions[i + 1] - mouseY) ** 2);
+            const dist2 = Math.sqrt((positions[j] - mouseX) ** 2 + (positions[j + 1] - mouseY) ** 2);
+            
+            if (dist1 < 2 || dist2 < 2) {
+              linePositions.push(positions[i], positions[i + 1], positions[i + 2]);
+              linePositions.push(positions[j], positions[j + 1], positions[j + 2]);
+            }
+          }
+        }
+      }
+
+      const lineGeometry = new THREE.BufferGeometry();
+      lineGeometry.setAttribute('position', new THREE.Float32BufferAttribute(linePositions, 3));
+      ref.current.geometry = lineGeometry;
+    }
+  });
+
+  return (
+    <lineSegments ref={ref}>
+      <bufferGeometry />
+      <lineBasicMaterial color="#3b82f6" transparent opacity={0.3} />
+    </lineSegments>
+  );
+};
+
+// Morphing sphere that reacts to mouse
+const MorphingSphere = () => {
+  const meshRef = useRef<THREE.Mesh>(null);
+  const { mouse } = useThree();
+
+  useFrame((state) => {
+    if (meshRef.current) {
+      const geometry = meshRef.current.geometry as THREE.SphereGeometry;
+      const positionAttribute = geometry.attributes.position;
+      const vertex = new THREE.Vector3();
+
+      for (let i = 0; i < positionAttribute.count; i++) {
+        vertex.fromBufferAttribute(positionAttribute, i);
+        
+        const mouseInfluence = Math.exp(-(mouse.x ** 2 + mouse.y ** 2) * 2);
+        const time = state.clock.elapsedTime;
+        
+        vertex.normalize();
+        const distortion = Math.sin(vertex.x * 4 + time) * Math.cos(vertex.y * 4 + time) * 0.1;
+        const mouseDistortion = mouseInfluence * 0.3;
+        
+        vertex.multiplyScalar(1 + distortion + mouseDistortion);
+        positionAttribute.setXYZ(i, vertex.x, vertex.y, vertex.z);
+      }
+      
+      positionAttribute.needsUpdate = true;
+      geometry.computeVertexNormals();
+      
+      // Rotate based on mouse position
+      meshRef.current.rotation.y += mouse.x * 0.01;
+      meshRef.current.rotation.x += mouse.y * 0.01;
+    }
+  });
+
+  return (
+    <mesh ref={meshRef} position={[0, 0, -3]}>
+      <sphereGeometry args={[1.5, 64, 64]} />
+      <meshStandardMaterial
+        color="#8b5cf6"
+        transparent
+        opacity={0.3}
+        wireframe
+        emissive="#3b82f6"
+        emissiveIntensity={0.2}
+      />
+    </mesh>
+  );
+};
+
+// Mouse follower light with color change
+const MouseFollowerLight = () => {
   const lightRef = useRef<THREE.PointLight>(null);
   const { mouse, viewport } = useThree();
 
-  useFrame(() => {
+  useFrame((state) => {
     if (lightRef.current) {
       lightRef.current.position.x = (mouse.x * viewport.width) / 2;
       lightRef.current.position.y = (mouse.y * viewport.height) / 2;
       lightRef.current.position.z = 2;
+      
+      // Change color based on mouse position
+      const hue = (mouse.x + 1) * 0.5 * 360;
+      lightRef.current.color.setHSL(hue / 360, 0.7, 0.6);
+      
+      // Pulsing intensity
+      lightRef.current.intensity = 1 + Math.sin(state.clock.elapsedTime * 2) * 0.5;
     }
   });
 
   return (
     <pointLight
       ref={lightRef}
-      intensity={2}
-      color="#60a5fa"
-      distance={10}
+      intensity={1.5}
+      distance={8}
       decay={2}
     />
-  );
-};
-
-// Interactive wave grid
-const WaveGrid = () => {
-  const meshRef = useRef<THREE.Mesh>(null);
-  const { mouse } = useThree();
-
-  useFrame((state) => {
-    if (meshRef.current) {
-      const geometry = meshRef.current.geometry as THREE.PlaneGeometry;
-      const positionAttribute = geometry.attributes.position;
-      
-      for (let i = 0; i < positionAttribute.count; i++) {
-        const x = positionAttribute.getX(i);
-        const y = positionAttribute.getY(i);
-        const mouseInfluence = Math.exp(-((x - mouse.x * 8) ** 2 + (y - mouse.y * 8) ** 2) / 15);
-        const wave = Math.sin(x * 0.5 + state.clock.elapsedTime) * 
-                    Math.cos(y * 0.5 + state.clock.elapsedTime) * 0.3 +
-                    mouseInfluence * 1.2;
-        positionAttribute.setZ(i, wave);
-      }
-      
-      positionAttribute.needsUpdate = true;
-      geometry.computeVertexNormals();
-    }
-  });
-
-  return (
-    <mesh ref={meshRef} position={[0, 0, -5]} rotation={[-Math.PI / 4, 0, 0]}>
-      <planeGeometry args={[20, 20, 64, 64]} />
-      <meshStandardMaterial
-        color="#1e40af"
-        transparent
-        opacity={0.2}
-        wireframe
-        emissive="#3b82f6"
-        emissiveIntensity={0.1}
-      />
-    </mesh>
   );
 };
 
 export const Scene3D = () => {
   return (
     <>
-      {/* Interactive camera controls */}
-      <OrbitControls 
-        enablePan={false}
-        enableZoom={true}
-        enableRotate={true}
-        maxDistance={10}
-        minDistance={3}
-        maxPolarAngle={Math.PI / 2}
-        autoRotate={true}
-        autoRotateSpeed={0.5}
-      />
+      {/* Dynamic lighting */}
+      <ambientLight intensity={0.2} />
+      <MouseFollowerLight />
+      <pointLight position={[5, 5, 5]} intensity={0.5} color="#60a5fa" />
+      <pointLight position={[-5, -5, 5]} intensity={0.3} color="#8b5cf6" />
       
-      {/* Dynamic lighting that follows mouse */}
-      <MouseLight />
-      <ambientLight intensity={0.3} />
-      <pointLight position={[10, 10, 10]} intensity={0.8} color="#3b82f6" />
-      <pointLight position={[-10, -10, -10]} intensity={0.3} color="#8b5cf6" />
-      <directionalLight position={[5, 5, 5]} intensity={0.5} color="#ffffff" />
+      {/* Interactive elements */}
+      <InteractiveParticles />
+      <ParticleConnections />
+      <MorphingSphere />
       
-      {/* Floating shapes */}
-      <FloatingShape position={[-3, 2, 0]} shape="sphere" color="#3b82f6" />
-      <FloatingShape position={[3, -1, 2]} shape="box" color="#8b5cf6" />
-      <FloatingShape position={[0, 3, -2]} shape="torus" color="#06b6d4" />
-      <FloatingShape position={[-2, -2, 1]} shape="sphere" color="#3b82f6" />
-      <FloatingShape position={[4, 1, -1]} shape="box" color="#8b5cf6" />
-      
-      {/* Particles */}
-      <Particles />
-      
-      {/* Wave grid */}
-      <WaveGrid />
+      {/* Subtle fog for depth */}
+      <fog attach="fog" args={['#0a0a0a', 8, 15]} />
     </>
   );
 };
